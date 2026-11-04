@@ -132,7 +132,7 @@ S 00000020,1 miss eviction
 hits:1 misses:4 evictions:1
 ```
 
-7. Submission Checklist
+## 7. Submission Checklist
 
 [ ] csim.c contains your completed `access_cache()` function implementation.
 
