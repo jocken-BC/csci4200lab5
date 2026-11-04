@@ -22,7 +22,7 @@ C
 void access_cache(cache_t cache, uint32_t address, int verbose);
 ```
 
-Provided Data Structures
+### Provided Data Structures
 
 The starter code provides pre-allocated cache structures defined as follows:
 
@@ -50,8 +50,11 @@ typedef struct {
 
 The simulator operates on 32-bit physical addresses. Every memory address is partitioned into three distinct bit fields determined by command-line parameters $s$ and $b$:
 
-$$\underbrace{\text{Tag Bits } (t)}_{\text{Upper } 32 - s - b \text{ bits}} \quad \mid \quad \underbrace{\text{Set Index Bits } (s)}_{\text{Middle } s \text{ bits}} \quad \mid \quad \underbrace{\text{Block Offset Bits } (b)}_{\text{Lower } b \text{ bits}}$$
-Address Extraction Requirements
+$$
+\underbrace{\text{Tag Bits } (t)}_{\text{Upper } 32 - s - b \text{ bits}} \quad \mid \quad \underbrace{\text{Set Index Bits } (s)}_{\text{Middle } s \text{ bits}} \quad \mid \quad \underbrace{\text{Block Offset Bits } (b)}_{\text{Lower } b \text{ bits}}
+$$
+
+### Address Extraction Requirements
 
 Inside `access_cache()`, you must calculate:
 
@@ -110,14 +113,14 @@ Bash
 ./csim [-v] -s <s> -E <E> -b <b> -t <tracefile>
 ```
 
-Standard Execution Output
+### Standard Execution Output
 Bash
 ```
 $ ./csim -s 2 -E 1 -b 4 -t sample.trace
 hits:1 misses:4 evictions:1
 ```
 
-Verbose Execution Output (-v)
+### Verbose Execution Output (-v)
 Bash
 ```
 $ ./csim -v -s 2 -E 1 -b 4 -t sample.trace
