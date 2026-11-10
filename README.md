@@ -117,7 +117,7 @@ Bash
 Bash
 ```
 $ ./csim -s 2 -E 1 -b 4 -t sample.trace
-hits:1 misses:4 evictions:1
+hits:2 misses:4 evictions:1
 ```
 
 ### Verbose Execution Output (-v)
@@ -127,9 +127,10 @@ $ ./csim -v -s 2 -E 1 -b 4 -t sample.trace
 L 00000000,1 miss
 L 00000004,1 hit
 L 00000010,1 miss
-L 00000000,1 miss eviction
-S 00000020,1 miss eviction
-hits:1 misses:4 evictions:1
+L 00000000,1 hit
+S 00000020,1 miss
+L 00000040,1 miss eviction
+hits:2 misses:4 evictions:1
 ```
 
 ## 7. Submission Checklist
