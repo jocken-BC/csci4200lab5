@@ -93,9 +93,9 @@ the trace size field and use a First-In, First-Out (FIFO) replacement policy.
 * Simulation Parameters: -s 4 -E 1 -b 2 (16 sets, 1 line/set, 4-byte blocks)
 * Total Cache Size: 64 Bytes
 * Expected Output:
-    Hits: 4
-    Misses: 496
-    Evictions: 480
+    Hits: 1
+    Misses: 499
+    Evictions: 483
 * Description: Because the total cache can only hold 64 bytes out of a 65,536 
   byte playground, the mathematical probability of randomly guessing a memory 
   location already stored in the cache is near zero (~0.1%). You see massive 
@@ -105,9 +105,9 @@ the trace size field and use a First-In, First-Out (FIFO) replacement policy.
 * Simulation Parameters: -s 4 -E 4 -b 10 (16 sets, 4 lines/set, 1024-byte blocks)
 * Total Cache Size: 64 KB
 * Expected Output:
-    Hits: 433
-    Misses: 67
-    Evictions: 3
+    Hits: 436
+    Misses: 64
+    Evictions: 0
 * Description: By increasing the block size to 1024 bytes (b=10) and expanding 
   associativity (E=4), the cache footprint scales up to exactly 64 KB. Because 
   the cache capacity now matches the entire address space of the random generator, 
