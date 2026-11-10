@@ -1,0 +1,117 @@
+======================================================================
+CS:APP CACHE SIMULATOR TEST GUIDE
+======================================================================
+
+This guide lists the precise expected output metrics for simulators that ignore
+the trace size field and use a First-In, First-Out (FIFO) replacement policy.
+
+1. spatial_locality_safe.trace
+----------------------------------------------------------------------
+* Trace Size: 64 total access rows
+* Simulation Parameters: -s 2 -E 1 -b 4  (4 sets, 1 line/set, 16-byte blocks)
+* Expected Output:
+    Hits: 32
+    Misses: 32
+    Evictions: 28
+
+* Why these numbers occur:
+  Addresses progress by 8 bytes (0x0, 0x8, 0x10, 0x18...). Because blocks are 
+  16 bytes wide, address 0x0 misses and pulls in the block. Address 0x8 hits 
+  inside that same block. This clean alternating pattern yields a perfect 50% 
+  Hit/Miss split. 
+  The first 4 misses load clean into empty Sets 0, 1, 2, and 3. Every single 
+  miss after that (32 total misses - 4 cold misses = 28) causes an eviction.
+
+
+2. thrashing.trace
+----------------------------------------------------------------------
+* Trace Size: 200 total access rows
+* Simulation Parameters: -s 5 -E 2 -b 5  (32 sets, 2 lines/set, 32-byte blocks)
+* Expected Output:
+    Hits: 0
+    Misses: 200
+    Evictions: 198
+
+* Why these numbers occur:
+  Shifting the trace addresses right by b=5 leaves a set index of 00000 (Set 0) 
+  for all 4 items. Since the set only has 2 lines (E=2), the FIFO queue is 
+  constantly over-capacity. Address 0x2000 evicts 0x0; 0x3000 evicts 0x1000. 
+  When the loop rolls back around, 0x0 is gone. Total thrashing results in 0 hits.
+  Evictions are exactly equal to Misses minus the first 2 cold slots.
+
+*** Optimization Check: Change to -E 4 (4-Way Associative) ***
+* Expected Output:
+    Hits: 196
+    Misses: 4
+    Evictions: 0
+
+
+3. capacity_cliff.trace
+----------------------------------------------------------------------
+* Trace Size: 640 total access rows
+* Simulation Parameters: -s 5 -E 1 -b 6  (32 sets, 1 line/set, 64-byte blocks)
+* Expected Output:
+    Hits: 0
+    Misses: 640
+    Evictions: 608
+
+* Why these numbers occur:
+  The cache capacity is exactly 2 KB (32 * 1 * 64). The trace sweeps a working 
+  set of 4 KB. Because E=1, addresses halfway through the array cleanly kick 
+  out the lines cached at the beginning. By the time an outer loop iteration 
+  returns back to the start, everything has been cleared out.
+
+*** Optimization Check: Change to -s 6 (4 KB Cache Capacity) ***
+* Expected Output:
+    Hits: 576
+    Misses: 64
+    Evictions: 0
+
+
+4. write_validate.trace
+----------------------------------------------------------------------
+* Trace Size: 32 total access rows
+* Simulation Parameters: Any valid parameters (e.g., -s 4 -E 1 -b 4)
+* Expected Output:
+    Hits: 16
+    Misses: 16
+    Evictions: 0
+
+* Why these numbers occur:
+  The trace alternates a Load and a Store to identical block addresses. 
+  The 'L' operation triggers a miss and fetches the block, and the immediate 
+  subsequent 'S' results in a guaranteed hit, ensuring write performance 
+  and basic line residency are behaving appropriately under uniform execution.
+
+5. random_noise.trace
+----------------------------------------------------------------------
+* Trace Size: 500 total access rows across a 64 KB memory pool.
+* Why it's unique: Random patterns have no natural locality. Performance 
+  depends strictly on the ratio of Cache Capacity vs. Memory Pool Footprint.
+
+*** BAD CONFIGURATION (Microscopic Blocks & Tiny Cache) ***
+* Simulation Parameters: -s 4 -E 1 -b 2 (16 sets, 1 line/set, 4-byte blocks)
+* Total Cache Size: 64 Bytes
+* Expected Output:
+    Hits: 4
+    Misses: 496
+    Evictions: 480
+* Description: Because the total cache can only hold 64 bytes out of a 65,536 
+  byte playground, the mathematical probability of randomly guessing a memory 
+  location already stored in the cache is near zero (~0.1%). You see massive 
+  miss and eviction spikes.
+
+*** GOOD CONFIGURATION (Huge Blocks & High Capacity) ***
+* Simulation Parameters: -s 4 -E 4 -b 10 (16 sets, 4 lines/set, 1024-byte blocks)
+* Total Cache Size: 64 KB
+* Expected Output:
+    Hits: 433
+    Misses: 67
+    Evictions: 3
+* Description: By increasing the block size to 1024 bytes (b=10) and expanding 
+  associativity (E=4), the cache footprint scales up to exactly 64 KB. Because 
+  the cache capacity now matches the entire address space of the random generator, 
+  almost every single block is kept in memory. After a block is filled by a cold 
+  miss once, any subsequent random numbers landing in that 1024-byte window 
+  become hits, resulting in an exceptional ~86% hit rate.
+
